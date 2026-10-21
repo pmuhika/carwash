@@ -1,7 +1,11 @@
 # Netlify — GitHub continuous deploy
-# Install ALL deps (including vite in devDependencies) before build.
-# Skip Electron binary download — website does not need it.
+# The app lives in the carwash-pos/ subfolder of this repo, so Netlify must
+# build from there. Without `base`, Netlify publishes the repo root, which has
+# no index.html and shows "Page not found".
 [build]
+  base = "carwash-pos"
+  # Paths below are relative to `base`.
+  # Install ALL deps (including vite in devDependencies) before build.
   command = "npm install --include=dev && npm run build"
   publish = "dist"
 
@@ -17,7 +21,7 @@
   from = "/*"
   to = "/index.html"
   status = 200
-  force = true
+  # No `force`: real files (JS/CSS/icons) must be served as-is, not index.html
 
 [[headers]]
   for = "/sw.js"
