@@ -4137,7 +4137,6 @@ th{background:#f8fafc} @media print{button{display:none}}</style></head><body>
               </div>
             )}
             <div
-            <div
               className="health-strip"
               title="Connection & sync health"
             >

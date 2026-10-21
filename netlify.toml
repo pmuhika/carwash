@@ -1,0 +1,40 @@
+# Netlify — GitHub continuous deploy
+# The app lives in the carwash-pos/ subfolder of this repo, so Netlify must
+# build from there. Without `base`, Netlify publishes the repo root, which has
+# no index.html and shows "Page not found".
+[build]
+  base = "carwash-pos"
+  # Paths below are relative to `base`.
+  # Install ALL deps (including vite in devDependencies) before build.
+  command = "npm install --include=dev && npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+  # Prevent electron postinstall from downloading ~100MB binary on Netlify
+  ELECTRON_SKIP_BINARY_DOWNLOAD = "1"
+  # Some CI environments omit devDependencies unless explicitly included
+  NPM_FLAGS = "--include=dev"
+
+# SPA fallback — fixes Netlify "Page not found" on refresh / deep links
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+  # No `force`: real files (JS/CSS/icons) must be served as-is, not index.html
+
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/manifest.webmanifest"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+    Content-Type = "application/manifest+json"
+
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
