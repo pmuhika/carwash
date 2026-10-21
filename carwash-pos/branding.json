@@ -1,0 +1,10 @@
+{
+  "appName": "Carwash POS",
+  "shortName": "Carwash",
+  "description": "Carwash Bar & Restaurant — point of sale",
+  "author": "Carwash Bar & Restaurant",
+  "appId": "com.carwash.pos",
+  "iconFile": "public/icon-512.png",
+  "windowWidth": 1280,
+  "windowHeight": 800
+}
