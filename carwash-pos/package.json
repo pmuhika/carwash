@@ -1,7 +1,7 @@
 {
   "name": "carwash-pos",
   "private": true,
-  "version": "2.2.3",
+  "version": "2.2.6",
   "description": "Carwash POS \u2014 bar & restaurant point of sale",
   "author": "Carwash Bar & Restaurant",
   "main": "electron/main.cjs",

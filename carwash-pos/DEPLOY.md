@@ -53,7 +53,7 @@ Secrets `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are injected automaticall
 
 ## 4. Frontend (GitHub → Netlify)
 
-The repo-root `netlify.toml` sets `base = "carwash-pos"` so Git deploys build the app from this subfolder.
+Repo includes `netlify.toml` so Git deploys use the correct settings.
 
 ### Extract the zip correctly
 The installable zip contains a **top-level folder** `bar-pos-cloud/`.  
@@ -63,7 +63,7 @@ Extract it so you get one folder (not files scattered in Downloads).
 - **Do not** drag-and-drop the source zip or the `src/` folder. Netlify must **build** the site.
 - Use GitHub continuous deploy (recommended) **or** run `npm run build` locally and upload only the `dist/` folder.
 - `netlify.toml` + `public/_redirects` already SPA-fallback `/*` → `/index.html`.
-- If you still see 404: Site configuration → Build & deploy → confirm Base directory is `carwash-pos` (or empty, so `netlify.toml` decides) and Publish directory is `carwash-pos/dist`, then **Trigger deploy → Clear cache and deploy**.
+- If you still see 404: Site configuration → Build & deploy → confirm Publish directory is `dist`, then **Trigger deploy → Clear cache and deploy**.
 
 ### Push to GitHub
 ```bash

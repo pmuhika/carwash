@@ -653,26 +653,39 @@ export default function App() {
     }
   }, []);
 
-useEffect(() => {
-    // Force login screen every launch — no auto sign-in from persisted session
+  // Never auto sign-in: every launch shows login until user presses Sign in
+  useEffect(() => {
+    let cancelled = false;
     setSession(null);
     setProfile(null);
+    (async () => {
+      if (!supabase) return;
+      try {
+        // Clear persisted Supabase session from this browser so the app never skips login
+        await supabase.auth.signOut({ scope: "local" });
+      } catch {
+        /* ignore */
+      }
+      if (!cancelled) {
+        setSession(null);
+        setProfile(null);
+      }
+    })();
     if (!supabase) return;
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, s) => {
-      if (event === "TOKEN_REFRESHED" && !s) return;
+    } = supabase.auth.onAuthStateChange((event) => {
+      // Do not restore session from storage / INITIAL_SESSION / SIGNED_IN
+      // Session enters the UI only via explicit finishLogin() after Sign in
       if (event === "SIGNED_OUT") {
         setSession(null);
         setProfile(null);
-        return;
-      }
-      // Only after explicit Sign in (not INITIAL_SESSION restore)
-      if (event === "SIGNED_IN" && s) {
-        setSession(s);
       }
     });
-    return () => subscription.unsubscribe();
+    return () => {
+      cancelled = true;
+      subscription.unsubscribe();
+    };
   }, []);
   useEffect(() => {
     document.documentElement.classList.toggle("dark", darkMode);
@@ -2299,20 +2312,26 @@ useEffect(() => {
       0,
     ),
     cost = cart.reduce((n, x) => n + x.qty * Number(x.product.cost_price), 0);
-  /** Ensure a live cloud session — silent re-login with remembered credentials when needed */
+  /**
+   * Ensure Supabase client has a cloud JWT for offline-queue sync only.
+   * Does NOT sign the user into the app UI (no auto sign-in).
+   * Only runs when the UI already has an active session (user pressed Sign in).
+   */
   async function ensureCloudSession(): Promise<boolean> {
     if (!supabase) return false;
+    // Never bootstrap the app from credentials here — user must be in the app already
+    if (!session) return false;
     try {
       const { data } = await supabase.auth.getSession();
       const live = data.session;
       if (live && !isOfflineSession(live as any) && live.access_token) {
-        if (!session || isOfflineSession(session)) setSession(live);
         return true;
       }
     } catch {
-      /* try password refresh below */
+      /* try refresh below */
     }
-    // Silent re-login from remembered credentials
+    // Refresh token only if UI session exists (offline local session → use saved password for RPC)
+    if (!isOfflineSession(session)) return false;
     try {
       const raw = localStorage.getItem("barpos_remember_login");
       if (!raw) return false;
@@ -2325,6 +2344,7 @@ useEffect(() => {
         password: pw,
       });
       if (error || !data.session) return false;
+      // Keep UI on same staff session; swap to real cloud tokens for RPC
       setSession(data.session);
       return true;
     } catch {
@@ -3966,7 +3986,7 @@ th{background:#f8fafc} @media print{button{display:none}}</style></head><body>
               </div>
             </label>
             <p className="tiny muted" style={{ margin: 0 }}>
-              Email is always remembered. Password is saved on this device after sign-in for faster till access.
+              Email and password are filled in for convenience — you still must press Sign in every time.
             </p>
             <button
               className="primary full login-sign-btn"
